@@ -23,3 +23,17 @@ class HygieneScorer:
         if result.get("csp_header"): score += 40
         if (result.get("cert_days_remaining") or 0) > 30: score += 20
         return min(score, 100)
+
+    @staticmethod
+    def get_grade(score: int) -> str:
+        """Assigns a letter grade based on the calculated security score."""
+        if score >= 90: return "A"
+        if score >= 70: return "B"
+        if score >= 50: return "C"
+        return "F"
+
+class BatchValidator:
+    @staticmethod
+    def validate_targets(targets: List[str]) -> Dict[str, bool]:
+        """Validates that target strings are non-empty and unique."""
+        return {t: (len(t) > 0) for t in set(targets)}

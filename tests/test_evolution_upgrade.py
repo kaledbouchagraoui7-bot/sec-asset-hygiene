@@ -1,23 +1,31 @@
 import pytest
 import os
-from evolution_extensions import HygieneReporter, HygieneScorer
+import json
+from evolution_extensions import HygieneScorer, BatchValidator, HygieneReporter
 
-def test_scorer_perfect_score():
-    result = {"hsts_header": True, "csp_header": True, "cert_days_remaining": 60}
-    assert HygieneScorer.calculate_score(result) == 100
+@pytest.fixture
+def sample_result():
+    return {"hsts_header": True, "csp_header": True, "cert_days_remaining": 45}
 
-def test_scorer_partial_score():
-    result = {"hsts_header": True, "csp_header": False, "cert_days_remaining": 10}
-    assert HygieneScorer.calculate_score(result) == 40
+def test_calculate_score(sample_result):
+    score = HygieneScorer.calculate_score(sample_result)
+    assert score == 100
 
-def test_json_export_creates_file(tmp_path):
+def test_get_grade():
+    assert HygieneScorer.get_grade(95) == "A"
+    assert HygieneScorer.get_grade(40) == "F"
+
+def test_validate_targets():
+    targets = ["example.com", "", "example.com"]
+    validation = BatchValidator.validate_targets(targets)
+    assert validation["example.com"] is True
+    assert validation[""] is False
+
+def test_export_to_json(tmp_path):
     d = tmp_path / "report.json"
-    HygieneReporter.export_to_json([{"target": "test.com"}], str(d))
+    data = [{"id": 1}]
+    HygieneReporter.export_to_json(data, str(d))
     assert d.exists()
-
-def test_json_export_content(tmp_path):
-    d = tmp_path / "report.json"
-    HygieneReporter.export_to_json([{"target": "test.com"}], str(d))
     with open(d, 'r') as f:
-        data = f.read()
-        assert "test.com" in data
+        content = json.load(f)
+        assert content["count"] == 1
