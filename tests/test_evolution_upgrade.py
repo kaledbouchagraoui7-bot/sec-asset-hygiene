@@ -1,22 +1,23 @@
 import pytest
-from evolution_extensions import SecurityResult, AdvancedReporter, TargetSanitizer
+import os
+from evolution_extensions import HygieneEnhancer, TargetValidator
 
-def test_security_result_validation():
-    res = SecurityResult(target="example.com", hsts_header=True)
-    assert res.target == "example.com"
-    assert res.hsts_header is True
+def test_grading_logic():
+    assert HygieneEnhancer.calculate_security_grade(100) == "A"
+    assert HygieneEnhancer.calculate_security_grade(10) == "C"
 
-def test_security_result_invalid_days():
-    with pytest.raises(ValueError):
-        SecurityResult(target="bad.com", cert_days_remaining=-5)
+def test_domain_validation():
+    targets = ["google.com", "invalid", "test.org"]
+    valid = TargetValidator.validate_domain_format(targets)
+    assert "google.com" in valid
+    assert "invalid" not in valid
 
-def test_target_sanitization():
-    raw = ["  google.com ", "GOOGLE.COM", "", "bing.com"]
-    cleaned = TargetSanitizer.sanitize_and_deduplicate(raw)
-    assert cleaned == ["bing.com", "google.com"]
+def test_report_export(tmp_path):
+    d = tmp_path / "report.json"
+    data = [{"target": "test.com", "grade": "A"}]
+    success = HygieneEnhancer.export_batch_report(data, str(d))
+    assert success is True
+    assert d.exists()
 
-def test_sarif_generation():
-    results = [SecurityResult(target="test.com", cert_days_remaining=45)]
-    output = AdvancedReporter.generate_sarif_compatible(results)
-    assert "test.com" in output
-    assert "2.1.0" in output
+def test_empty_validation():
+    assert TargetValidator.validate_domain_format([]) == []
