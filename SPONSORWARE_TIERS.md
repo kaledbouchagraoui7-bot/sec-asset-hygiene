@@ -1,12 +1,6 @@
 # Sponsorware Tiers
 
-## MIT Core
-- Open-source asset hygiene engine.
-- Basic validation rules.
+- **MIT Core**: Access to the core logging wrapper in `logger.py` and `debug_utils.py`.
+- **Pro Tier**: Access to the automated GitHub Actions workflow files and the compliance reporting module.
 
-## Sponsorware Pro
-- Advanced medtech compliance reporting.
-- Automated audit trail generation.
-- Priority support.
-
-*Note: Per French Civil Code Art. 388-2 & 389, any commercial agreements involving minors or protected assets require guardian co-signature for payout validation.*
+*Note: Per French Civil Code Art. 388-2 and 389, any payouts to minors require a guardian's co-signature.*
