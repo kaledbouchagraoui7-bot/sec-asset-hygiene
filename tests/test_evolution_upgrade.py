@@ -1,31 +1,22 @@
 import pytest
-import os
-import json
-from evolution_extensions import HygieneScorer, BatchValidator, HygieneReporter
+from evolution_extensions import SecurityResult, AdvancedReporter, TargetSanitizer
 
-@pytest.fixture
-def sample_result():
-    return {"hsts_header": True, "csp_header": True, "cert_days_remaining": 45}
+def test_security_result_validation():
+    res = SecurityResult(target="example.com", hsts_header=True)
+    assert res.target == "example.com"
+    assert res.hsts_header is True
 
-def test_calculate_score(sample_result):
-    score = HygieneScorer.calculate_score(sample_result)
-    assert score == 100
+def test_security_result_invalid_days():
+    with pytest.raises(ValueError):
+        SecurityResult(target="bad.com", cert_days_remaining=-5)
 
-def test_get_grade():
-    assert HygieneScorer.get_grade(95) == "A"
-    assert HygieneScorer.get_grade(40) == "F"
+def test_target_sanitization():
+    raw = ["  google.com ", "GOOGLE.COM", "", "bing.com"]
+    cleaned = TargetSanitizer.sanitize_and_deduplicate(raw)
+    assert cleaned == ["bing.com", "google.com"]
 
-def test_validate_targets():
-    targets = ["example.com", "", "example.com"]
-    validation = BatchValidator.validate_targets(targets)
-    assert validation["example.com"] is True
-    assert validation[""] is False
-
-def test_export_to_json(tmp_path):
-    d = tmp_path / "report.json"
-    data = [{"id": 1}]
-    HygieneReporter.export_to_json(data, str(d))
-    assert d.exists()
-    with open(d, 'r') as f:
-        content = json.load(f)
-        assert content["count"] == 1
+def test_sarif_generation():
+    results = [SecurityResult(target="test.com", cert_days_remaining=45)]
+    output = AdvancedReporter.generate_sarif_compatible(results)
+    assert "test.com" in output
+    assert "2.1.0" in output

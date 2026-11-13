@@ -1,39 +1,34 @@
 import json
 from typing import List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
+from pydantic import BaseModel, Field, validator
 
-class HygieneReporter:
+class SecurityResult(BaseModel):
+    target: str
+    hsts_header: bool = False
+    csp_header: bool = False
+    cert_days_remaining: int = Field(ge=0, default=0)
+
+class HygieneReport(BaseModel):
+    timestamp: str
+    count: int
+    data: List[Dict[str, Any]]
+
+class AdvancedReporter:
     @staticmethod
-    def export_to_json(results: List[Dict[str, Any]], filepath: str) -> None:
-        """Exports security check results to a structured JSON file."""
+    def generate_sarif_compatible(results: List[SecurityResult]) -> str:
+        """Generates a simplified SARIF-like structure for security findings."""
         report = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "count": len(results),
-            "data": results
+            "version": "2.1.0",
+            "runs": [{
+                "tool": {"driver": {"name": "AssetHygieneScanner"}},
+                "results": [{"message": {"text": f"Target {r.target} scored {r.cert_days_remaining} days"}} for r in results]
+            }]
         }
-        with open(filepath, 'w') as f:
-            json.dump(report, f, indent=4)
+        return json.dumps(report)
 
-class HygieneScorer:
+class TargetSanitizer:
     @staticmethod
-    def calculate_score(result: Dict[str, Any]) -> int:
-        """Calculates a security score out of 100 based on headers and TLS."""
-        score = 0
-        if result.get("hsts_header"): score += 40
-        if result.get("csp_header"): score += 40
-        if (result.get("cert_days_remaining") or 0) > 30: score += 20
-        return min(score, 100)
-
-    @staticmethod
-    def get_grade(score: int) -> str:
-        """Assigns a letter grade based on the calculated security score."""
-        if score >= 90: return "A"
-        if score >= 70: return "B"
-        if score >= 50: return "C"
-        return "F"
-
-class BatchValidator:
-    @staticmethod
-    def validate_targets(targets: List[str]) -> Dict[str, bool]:
-        """Validates that target strings are non-empty and unique."""
-        return {t: (len(t) > 0) for t in set(targets)}
+    def sanitize_and_deduplicate(targets: List[str]) -> List[str]:
+        """Cleans input strings and ensures uniqueness."""
+        return sorted(list({t.strip().lower() for t in targets if t and t.strip()}))
