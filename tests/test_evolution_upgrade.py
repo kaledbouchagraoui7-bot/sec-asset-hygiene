@@ -1,20 +1,23 @@
 import pytest
-import os
-from evolution_extensions import HygieneEnhancerV2
+from evolution_extensions import HygieneEnhancerV3
 
-def test_risk_score_calculation():
-    findings = [{"severity": "critical"}, {"severity": "low"}]
-    assert HygieneEnhancerV2.calculate_risk_score(findings) == 5.5
+def test_validate_batch_success():
+    assets = [{"id": 1, "type": "server"}]
+    errors = HygieneEnhancerV3.validate_batch(assets, ["id", "type"])
+    assert len(errors) == 0
 
-def test_empty_risk_score():
-    assert HygieneEnhancerV2.calculate_risk_score([]) == 0.0
+def test_validate_batch_failure():
+    assets = [{"id": 1}]
+    errors = HygieneEnhancerV3.validate_batch(assets, ["id", "type"])
+    assert len(errors) == 1
+    assert "type" in errors[0]
 
-def test_report_export_success(tmp_path):
-    d = tmp_path / "report.json"
-    success = HygieneEnhancerV2.export_report([{"id": "test"}], str(d))
-    assert success is True
-    assert d.exists()
+def test_grade_security_posture():
+    assert HygieneEnhancerV3.grade_security_posture(9.0) == "CRITICAL"
+    assert HygieneEnhancerV3.grade_security_posture(1.0) == "LOW"
 
-def test_report_export_failure():
-    # Invalid path to trigger exception
-    assert HygieneEnhancerV2.export_report([], "/root/forbidden.json") is False
+def test_export_sarif_structure():
+    findings = [{"issue": "CVE-001"}]
+    sarif = HygieneEnhancerV3.export_sarif(findings)
+    assert sarif["version"] == "2.1.0"
+    assert sarif["runs"][0]["results"][0]["message"]["text"] == "CVE-001"

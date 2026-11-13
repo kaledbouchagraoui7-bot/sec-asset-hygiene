@@ -2,38 +2,35 @@ import json
 import logging
 from typing import List, Dict, Any
 from datetime import datetime, timezone
-from functools import wraps
 
-logger = logging.getLogger('evolution_extensions_v2')
+logger = logging.getLogger('evolution_extensions_v3')
 
-def log_transition(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger.info(f"Entering {func.__name__}")
-        result = func(*args, **kwargs)
-        return result
-    return wrapper
-
-class HygieneEnhancerV2:
+class HygieneEnhancerV3:
     @staticmethod
-    @log_transition
-    def export_report(findings: List[Dict[str, Any]], filepath: str) -> bool:
-        try:
-            report = {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "count": len(findings),
-                "results": findings
-            }
-            with open(filepath, 'w') as f:
-                json.dump(report, f, indent=2)
-            return True
-        except Exception:
-            return False
+    def validate_batch(assets: List[Dict[str, Any]], required_keys: List[str]) -> List[str]:
+        """Validates a batch of assets and returns a list of missing keys for invalid assets."""
+        errors = []
+        for i, asset in enumerate(assets):
+            missing = [k for k in required_keys if k not in asset]
+            if missing:
+                errors.append(f"Asset {i} missing: {', '.join(missing)}")
+        return errors
 
     @staticmethod
-    @log_transition
-    def calculate_risk_score(findings: List[Dict[str, Any]]) -> float:
-        if not findings: return 0.0
-        severity_map = {"critical": 10.0, "high": 7.0, "medium": 4.0, "low": 1.0}
-        total = sum(severity_map.get(f.get("severity", "low").lower(), 1.0) for f in findings)
-        return round(total / len(findings), 2)
+    def grade_security_posture(score: float) -> str:
+        """Grades a risk score into a human-readable category."""
+        if score >= 8.0: return "CRITICAL"
+        if score >= 5.0: return "HIGH"
+        if score >= 2.0: return "MEDIUM"
+        return "LOW"
+
+    @staticmethod
+    def export_sarif(findings: List[Dict[str, Any]], tool_name: str = "sec_asset_hygiene") -> Dict[str, Any]:
+        """Generates a minimal SARIF-compliant structure."""
+        return {
+            "version": "2.1.0",
+            "runs": [{
+                "tool": {"driver": {"name": tool_name}},
+                "results": [{"message": {"text": f.get("issue", "N/A")} for f in findings}]
+            }]
+        }
