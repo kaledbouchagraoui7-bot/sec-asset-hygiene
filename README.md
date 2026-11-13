@@ -12,7 +12,7 @@ An open-source, privacy-first Python CLI tool for DevSecOps consultants and cybe
 No third-party dependencies required. Python 3.12+ standard library only.
 
 ```bash
-git clone https://github.com/your-username/sec-asset-hygiene.git
+git clone https://github.com/kaledbouchagraoui7-bot/sec-asset-hygiene.git
 cd sec-asset-hygiene
 python3 sec_asset_hygiene.py --help
 ```
@@ -30,12 +30,11 @@ python3 sec_asset_hygiene.py --file asset_list.txt --dedup-threshold 0.85 --obsi
 ```
 
 ## Running Tests
-Run unit tests using standard `unittest` or `pytest`:
+Run unit tests using `pytest` or standard `unittest`:
 ```bash
-python3 -m unittest test_sec_asset_hygiene.py
+pytest
 ```
 
-## License & Monetization
-This repository is licensed under the [MIT License](LICENSE).
-
-Support ongoing open-source development or sponsor to unlock Pro Obsidian Canvas templates and executive Docx report exporters via [GitHub Sponsors](https://github.com/sponsors/your-username).
+## About & License
+Built as a free, open-source Python utility by a student engineer for learning and practical security hygiene checks.
+Licensed under the [MIT License](LICENSE).
