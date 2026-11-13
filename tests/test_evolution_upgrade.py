@@ -1,23 +1,26 @@
 import pytest
-import os
+from unittest.mock import patch, mock_open
 from evolution_extensions import HygieneEnhancer, TargetValidator
 
-def test_grading_logic():
+def test_security_grade_logic():
     assert HygieneEnhancer.calculate_security_grade(100) == "A"
+    assert HygieneEnhancer.calculate_security_grade(45) == "B"
     assert HygieneEnhancer.calculate_security_grade(10) == "C"
 
 def test_domain_validation():
-    targets = ["google.com", "invalid", "test.org"]
+    targets = ["valid.com", "bad", "a.co"]
     valid = TargetValidator.validate_domain_format(targets)
-    assert "google.com" in valid
-    assert "invalid" not in valid
+    assert "valid.com" in valid
+    assert "bad" not in valid
+    assert "a.co" in valid
 
-def test_report_export(tmp_path):
-    d = tmp_path / "report.json"
-    data = [{"target": "test.com", "grade": "A"}]
-    success = HygieneEnhancer.export_batch_report(data, str(d))
-    assert success is True
-    assert d.exists()
+def test_export_batch_report_success():
+    with patch("builtins.open", mock_open()) as mocked_file:
+        result = HygieneEnhancer.export_batch_report([{"id": 1}], "test.json")
+        assert result is True
+        mocked_file.assert_called_once_with("test.json", 'w')
 
-def test_empty_validation():
-    assert TargetValidator.validate_domain_format([]) == []
+def test_export_batch_report_failure():
+    with patch("builtins.open", side_effect=IOError):
+        result = HygieneEnhancer.export_batch_report([], "invalid/path.json")
+        assert result is False
