@@ -1,26 +1,28 @@
 import pytest
-from unittest.mock import patch, mock_open
-from evolution_extensions import HygieneEnhancer, TargetValidator
+from evolution_extensions import HygieneEnhancerV2
 
-def test_security_grade_logic():
-    assert HygieneEnhancer.calculate_security_grade(100) == "A"
-    assert HygieneEnhancer.calculate_security_grade(45) == "B"
-    assert HygieneEnhancer.calculate_security_grade(10) == "C"
+@pytest.fixture
+def sample_findings():
+    return [{"ruleId": "SEC001", "message": "Critical"}]
 
-def test_domain_validation():
-    targets = ["valid.com", "bad", "a.co"]
-    valid = TargetValidator.validate_domain_format(targets)
-    assert "valid.com" in valid
-    assert "bad" not in valid
-    assert "a.co" in valid
+@pytest.fixture
+def raw_targets():
+    return ["  example.com ", "test.org", "", 123]
 
-def test_export_batch_report_success():
-    with patch("builtins.open", mock_open()) as mocked_file:
-        result = HygieneEnhancer.export_batch_report([{"id": 1}], "test.json")
-        assert result is True
-        mocked_file.assert_called_once_with("test.json", 'w')
+def test_sarif_structure(sample_findings):
+    result = HygieneEnhancerV2.generate_sarif_stub(sample_findings)
+    assert result["version"] == "2.1.0"
+    assert len(result["runs"][0]["results"]) == 1
 
-def test_export_batch_report_failure():
-    with patch("builtins.open", side_effect=IOError):
-        result = HygieneEnhancer.export_batch_report([], "invalid/path.json")
-        assert result is False
+def test_batch_sanitize_valid(raw_targets):
+    sanitized = HygieneEnhancerV2.batch_sanitize_targets(raw_targets)
+    assert "example.com" in sanitized
+    assert "test.org" in sanitized
+    assert len(sanitized) == 2
+
+def test_sarif_empty():
+    result = HygieneEnhancerV2.generate_sarif_stub([])
+    assert result["runs"][0]["results"] == []
+
+def test_sanitize_empty_list():
+    assert HygieneEnhancerV2.batch_sanitize_targets([]) == []
