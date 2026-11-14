@@ -20,12 +20,23 @@ class HygieneEnhancerV3:
 
     @staticmethod
     def sanitize_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
-        """Removes potentially sensitive keys from asset metadata."""
         sensitive_keys = {'password', 'token', 'secret', 'key'}
         return {k: v for k, v in data.items() if k.lower() not in sensitive_keys}
 
     @staticmethod
     def calculate_compliance_rate(passed: int, total: int) -> float:
-        """Calculates percentage of compliant assets."""
         if total == 0: return 0.0
         return round((passed / total) * 100, 2)
+
+    @staticmethod
+    def export_to_json(data: Any, filepath: str) -> bool:
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(data, f)
+            return True
+        except (IOError, TypeError):
+            return False
+
+    @staticmethod
+    def validate_schema_strict(data: Dict[str, Any], schema: Dict[str, type]) -> bool:
+        return all(isinstance(data.get(k), t) for k, t in schema.items())
