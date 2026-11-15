@@ -1,40 +1,38 @@
-# SecAsset Hygiene CLI 🛡️
+# SecAsset Hygiene & Sentinel Compliance Auditor 🛡️
 
-An open-source, privacy-first Python CLI tool for DevSecOps consultants and cybersecurity auditors to perform DNS/TLS hygiene scanning, statistical deduplication of target assets, and export formatted reports directly into Obsidian vaults for local AI agent workflows.
+An open-source, privacy-first Python suite for DevSecOps, privacy teams, and DPOs combining **DNS/TLS asset hygiene (`sec_asset_hygiene.py`)** and **25-control nFADP/GDPR/DMARC/EAA passive compliance auditing (`sentinel_auditor/`)**.
 
-## Features
-- 🔍 **DNS & Security Header Scanning**: Audits HTTP status, HSTS, CSP, and TLS certificate expiration using standard library Python.
-- 🧹 **Statistical Deduplication**: Deduplicates asset lists using fuzzy string similarity ratios.
-- 📝 **Markdown Report Generation**: Produces instant security audit reports for compliance frameworks (ISO27001 / NIS2).
-- 🧠 **Obsidian Vault Export**: Generates frontmatter-rich `.md` notes and vault index files ready for AI agent inspection (e.g. Smart Connections / Local LLMs).
+- **Live Zero-Install ROI Demo (GitHub Pages):** [https://kaledbouchagraoui7-bot.github.io/sec-asset-hygiene/](https://kaledbouchagraoui7-bot.github.io/sec-asset-hygiene/)
+- **Automated Verification:** `12` passing `pytest` tests (`8` asset hygiene + `4` Sentinel 25-control auditor tests).
+
+## Capabilities
+- **Asset Hygiene & Obsidian Export (`sec_asset_hygiene.py`):** Normalizes URLs/domains, performs statistical target deduplication, audits HTTP status / HSTS / CSP / TLS expiry, and exports Markdown + Obsidian Vault notes.
+- **Sentinel 25-Control Passive Compliance Auditor (`sentinel_auditor/`):** Absorbed from `sentinel-compliance-auditor`. Performs passive DNS-over-HTTPS (`DMARC`/`SPF` lookup counter/`CAA`), pre-consent US tracker / Google Fonts checks (Swiss nFADP & EU GDPR), Edge Security (`HSTS`, `CSP`, `security.txt`), Accessibility baseline (`WCAG 2.1 AA`), and outputs Word `.docx`, 4-sheet Excel `.xlsx`, 300-DPI scorecard `.png`/`.pdf`, and drop-in remediation configs.
 
 ## Installation
-No third-party dependencies required. Python 3.12+ standard library only.
-
 ```bash
 git clone https://github.com/kaledbouchagraoui7-bot/sec-asset-hygiene.git
 cd sec-asset-hygiene
-python3 sec_asset_hygiene.py --help
+pip install -r requirements.txt
 ```
 
 ## Usage Examples
 
-### Basic Domain Scan & Report Output
+### Asset Hygiene Scan & Obsidian Vault Export
 ```bash
-python3 sec_asset_hygiene.py --targets example.com test.org --output-report report.md
+python sec_asset_hygiene.py --targets example.com test.org --output-report report.md
+python sec_asset_hygiene.py --file asset_list.txt --dedup-threshold 0.85 --obsidian-vault ~/Obsidian/SecurityVault
 ```
 
-### File Input with Deduplication & Obsidian Vault Export
+### Sentinel 25-Control Domain Compliance Audit
 ```bash
-python3 sec_asset_hygiene.py --file asset_list.txt --dedup-threshold 0.85 --obsidian-vault ~/Obsidian/SecurityVault
+python sentinel_auditor/sentinel_scanner.py example.ch --output-dir output
 ```
 
 ## Running Tests
-Run unit tests using `pytest` or standard `unittest`:
 ```bash
-pytest
+pytest -v
 ```
 
-## About & License
-Built as a free, open-source Python utility by a student engineer for learning and practical security hygiene checks.
-Licensed under the [MIT License](LICENSE).
+## License
+Built as a free, open-source Python utility under the [MIT License](LICENSE). Strictly passive external observation only.
