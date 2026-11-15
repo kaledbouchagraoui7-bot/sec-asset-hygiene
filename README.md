@@ -1,5 +1,7 @@
 # SecAsset Hygiene & Sentinel Compliance Auditor 🛡️
 
+[![CI](https://github.com/kaledbouchagraoui7-bot/sec-asset-hygiene/actions/workflows/ci.yml/badge.svg)](https://github.com/kaledbouchagraoui7-bot/sec-asset-hygiene/actions/workflows/ci.yml)
+
 An open-source, privacy-first Python suite for DevSecOps, privacy teams, and DPOs combining **DNS/TLS asset hygiene (`sec_asset_hygiene.py`)** and **25-control nFADP/GDPR/DMARC/EAA passive compliance auditing (`sentinel_auditor/`)**.
 
 - **Live Zero-Install ROI Demo (GitHub Pages):** [https://kaledbouchagraoui7-bot.github.io/sec-asset-hygiene/](https://kaledbouchagraoui7-bot.github.io/sec-asset-hygiene/)
